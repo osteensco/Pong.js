@@ -1,8 +1,21 @@
-const INITIAL_VEL = .025
+const INITIAL_VEL = .02
+const CPUSPEED = .02
 
+
+
+
+//helper functions
+function randomNumberBetween(min, max) {
+    return Math.random() * (max - min) + min
+}
+
+
+
+//classes
 export class Ball {
-    constructor(ballElem) {
+    constructor(ballElem, ) {
         this.ballElem = ballElem
+        this.rect = this.setRect()
         this.reset()
     }
 
@@ -22,7 +35,7 @@ export class Ball {
         this.ballElem.style.setProperty("--y", value)
     }
 
-    rect() {
+    setRect() {
         return this.ballElem.getBoundingClientRect()
     }
 
@@ -40,38 +53,82 @@ export class Ball {
         this.velocity = INITIAL_VEL
     }
 
-    update(delta) {
+    update(delta, paddles) {
         this.x += this.direction.x * this.velocity * delta
         this.y += this.direction.y * this.velocity * delta
-        const rect = this.rect()
+        this.rect = this.setRect()
 
-        if (rect.bottom >= window.innerHeight || rect.top <= 0) {
+        if (this.rect.bottom >= window.innerHeight || this.rect.top <= 0) {
             this.direction.y *= -1
-            console.log('y axis check')
         }
 
-        if (rect.right >= window.innerWidth || rect.left <= 0) {
+        if (paddles.some(r => this.checkCollision(r))) {
             this.direction.x *= -1
-            console.log('x axis check')
+            this.velocity += .001
         }
     }
+
+    checkGoal() {
+        return this.rect.right >= window.innerWidth || this.rect.left <= 0
+    }
+
+    checkCollision(paddle) {
+        return (
+            paddle.left <= this.rect.right &&
+            paddle.right >= this.rect.left &&
+            paddle.top <= this.rect.bottom &&
+            paddle.bottom >= this.rect.top
+        )
+    }
+
+
+
 }
-
-
-function randomNumberBetween(min, max) {
-    return Math.random() * (max - min) + min
-}
-
 
 export class Paddle {
-    constructor(paddleElem) {
+    constructor(paddleElem, scoreElem) {
         this.paddleElem = paddleElem
+        this.scoreElem = scoreElem
+        this.score = 0
+        this.bonus = 0
+        this.rect = this.setRect()
+        this.reset()
     }
 
     get position() {
         return parseFloat(
-            getComputedStyle(this.paddleElem),getPropertyValue("--position")
+            getComputedStyle(this.paddleElem).getPropertyValue("--position")
         )
     }
 
+    set position(value) {
+        this.paddleElem.style.setProperty("--position", value)
+    }
+
+    setRect() {
+        return this.paddleElem.getBoundingClientRect()
+    }
+
+    update(delta, bally) {
+        this.position += CPUSPEED * delta * (bally - this.position)
+        this.rect = this.setRect()
+    }
+
+    reset() {
+        this.position = 50
+        this.bonus = 0
+    }
+
+    awardGoal(value) {
+        this.scoreElem.textContent = value
+        this.score += value
+    }
+
+}
+
+
+export class Drop {
+    constructor(ball) {
+        
+    }
 }

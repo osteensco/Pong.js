@@ -1,25 +1,56 @@
 import {Ball, Paddle} from "./classes.js"
 
 const ball = new Ball(document.getElementById("ball"))
-const playerPaddle = new Paddle(document.getElementById("player-paddle"))
-const cpuPaddle = new Paddle(document.getElementById("cpu-paddle"))
+const player = new Paddle(
+    document.getElementById("player-paddle"),
+    document.getElementById("player-score")
+    )
+const cpu = new Paddle(
+    document.getElementById("cpu-paddle"),
+    document.getElementById("cpu-score")
+    )
 
-let lastTime
-function update(time) {
-    if (lastTime != null) {
-        const delta = time - lastTime
-        ball.update(delta)
-        computerPaddle.update(delta, ball.y)
+let lastTime = 0
+let startTime
+
+function gameLoop(time) {
+    if (lastTime == 0) {
+        startTime = time
+        lastTime = time
     }
+    else if (lastTime - startTime >= 2000) {
+        const delta = time - lastTime
+        ball.update(delta, [player.rect, cpu.rect])
+        cpu.update(delta, ball.y)
+
+        if (ball.checkGoal()) {
+            if (ball.rect.right >= window.innerWidth) {
+                player.awardGoal(player.score + 1 + player.bonus)               
+            } else {
+                cpu.awardGoal(cpu.score + 1 + cpu.bonus)
+            }
+            ball.reset()
+            cpu.reset()
+            lastTime = 0
+        } else {
+            lastTime = time
+        }
+    }
+    else {
+        lastTime = time
+    }
+
+
     
-    lastTime = time
-    window.requestAnimationFrame(update)
+    window.requestAnimationFrame(gameLoop)
 }
 
 
+
 document.addEventListener("mousemove", e => {
-    playerPaddle.position = (e.y / window.innerHeight) * 100
+    player.position = (e.y / window.innerHeight) * 100
+    player.rect = player.setRect()
 })
 
-window.requestAnimationFrame(update)
+window.requestAnimationFrame(gameLoop)
 
