@@ -7,7 +7,8 @@
 
 body {
     margin: 0;
-    background-color: rgb(177, 177, 177)
+    background-color: rgb(177, 177, 177);
+    overflow: hidden;
 }
 
 
@@ -39,8 +40,8 @@ body {
 
     position: absolute;
     background-color: black;
-    top: calc(var(--x) * 1vh);
-    left: calc(var(--y) * 1vw);
+    left: calc(var(--x) * 1vh);
+    top: calc(var(--y) * 1vw);
     border-radius: 50%;
     transform: translateY(-50%, -50%);
     width: 3vh;
