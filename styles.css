@@ -48,6 +48,24 @@ body {
     height: 3vh;
 }
 
+.drop {
+    --x: 50;
+    --y: 50;
+
+
+    position: absolute;
+    background-color: blueviolet;
+    opacity: 0;
+    left: calc(var(--x) * 1vh);
+    top: calc(var(--y) * 1vw);
+    border-radius: 20%;
+    transform: translateY(-50%, -50%);
+    width: 1vh;
+    height: 2vh;
+}
+
+
+
 .score {
     display: flex;
     justify-content: center;

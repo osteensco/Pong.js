@@ -3,15 +3,22 @@ import {Ball, Paddle} from "./classes.js"
 const ball = new Ball(document.getElementById("ball"))
 const player = new Paddle(
     document.getElementById("player-paddle"),
-    document.getElementById("player-score")
+    document.getElementById("player-score"),
+    ball
     )
 const cpu = new Paddle(
     document.getElementById("cpu-paddle"),
-    document.getElementById("cpu-score")
+    document.getElementById("cpu-score"),
+    ball
     )
+
+
 
 let lastTime = 0
 let startTime
+
+
+
 
 function gameLoop(time) {
     if (lastTime == 0) {
@@ -20,9 +27,9 @@ function gameLoop(time) {
     }
     else if (lastTime - startTime >= 2000) {
         const delta = time - lastTime
-        ball.update(delta, [player.rect, cpu.rect])
-        cpu.update(delta, ball.y)
-
+        ball.update(delta, [player, cpu])
+        cpu.update(delta)
+        
         if (ball.checkGoal()) {
             if (ball.rect.right >= window.innerWidth) {
                 player.awardGoal(player.score + 1 + player.bonus)               
@@ -31,6 +38,7 @@ function gameLoop(time) {
             }
             ball.reset()
             cpu.reset()
+            player.reset()
             lastTime = 0
         } else {
             lastTime = time

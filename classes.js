@@ -1,5 +1,5 @@
 const INITIAL_VEL = .02
-const CPUSPEED = .02
+const CPUSPEED = .1
 
 
 
@@ -13,8 +13,10 @@ function randomNumberBetween(min, max) {
 
 //classes
 export class Ball {
-    constructor(ballElem, ) {
+    constructor(ballElem) {
         this.ballElem = ballElem
+        this.dropReady = false
+        this.drops = []
         this.rect = this.setRect()
         this.reset()
     }
@@ -51,6 +53,12 @@ export class Ball {
             this.direction = {x: Math.cos(heading), y: Math.sin(heading) }
         }
         this.velocity = INITIAL_VEL
+        this.resetVel = this.velocity
+        this.dirCooldown = 0
+        for (let i = 0; i < this.drops.length; i++) {
+            this.drops[i].reset()
+        }
+        this.drops = []
     }
 
     update(delta, paddles) {
@@ -58,11 +66,40 @@ export class Ball {
         this.y += this.direction.y * this.velocity * delta
         this.rect = this.setRect()
 
+        for (let i = 0; i < this.drops.length; i++) {
+            this.drops[i].update(delta, paddles)
+        }
+
+        if (this.dropReady) {
+            this.spawnDrop()
+        }
+        
+        if (this.dirCooldown < 50) {
+            this.dirCooldown += 1
+        }
+
         if (this.rect.bottom >= window.innerHeight || this.rect.top <= 0) {
             this.direction.y *= -1
         }
 
-        if (paddles.some(r => this.checkCollision(r))) {
+
+        let paddlerects = []
+        for (let i = 0; i < paddles.length; i++) {
+            paddlerects[i] = paddles[i].rect
+        } 
+        if (
+            this.dirCooldown >= 50 &&
+            paddlerects.some(r => this.checkCollision(r))
+            ) {
+            let target = paddlerects.find(r => this.checkCollision(r))
+            for (let i = 0; i < paddles.length; i++) {
+                if (paddles[i].rect == target) {
+                    target = paddles[i]
+                } 
+            }
+            target.debuff()
+            this.dropReady = true
+            this.dirCooldown = 0
             this.direction.x *= -1
             this.velocity += .001
         }
@@ -74,21 +111,36 @@ export class Ball {
 
     checkCollision(paddle) {
         return (
-            paddle.left <= this.rect.right &&
-            paddle.right >= this.rect.left &&
-            paddle.top <= this.rect.bottom &&
-            paddle.bottom >= this.rect.top
+            this.rect.right >= paddle.left &&
+            this.rect.left <= paddle.right &&
+            this.rect.bottom >= paddle.top &&
+            this.rect.top <= paddle.bottom
         )
     }
 
-
+    spawnDrop() {
+        if (
+            (this.direction.x > 0 && this.x > 50) ||
+            (this.direction.x < 0 && this.x < 50)
+            ) {
+            this.drops.push(new Drop(document.getElementById("drop"), this))
+            this.dropReady = false
+        }
+    }
+    
 
 }
 
+
+
+
+
+
 export class Paddle {
-    constructor(paddleElem, scoreElem) {
+    constructor(paddleElem, scoreElem, ball) {
         this.paddleElem = paddleElem
         this.scoreElem = scoreElem
+        this.ball = ball
         this.score = 0
         this.bonus = 0
         this.rect = this.setRect()
@@ -109,26 +161,143 @@ export class Paddle {
         return this.paddleElem.getBoundingClientRect()
     }
 
-    update(delta, bally) {
-        this.position += CPUSPEED * delta * (bally - this.position)
+    update(delta) {
+        this.position += CPUSPEED * delta * (this.ball.y - this.position)
         this.rect = this.setRect()
     }
 
     reset() {
         this.position = 50
         this.bonus = 0
+        this.debuff()
     }
 
     awardGoal(value) {
         this.scoreElem.textContent = value
-        this.score += value
+        this.score = value
     }
 
+    debuff() {
+        this.paddleElem.style.height = "15vh"
+        this.ball.velocity = this.ball.resetVel
+
+    }
+    
 }
 
 
+
+
+//drop mechanics
+function grow (target) {
+    target.paddleElem.style.height = "25vh"
+    target.bonus = 1
+}
+
+function fastball (target) {
+    target.ball.resetVel = target.ball.velocity
+    target.ball.velocity += .05
+    target.bonus = 1
+}
+
+
+
+
+let mechanics = [grow, fastball]
+
+
 export class Drop {
-    constructor(ball) {
-        
+    constructor(dropElem, ball) {
+        this.dropElem = dropElem
+        this.ball = ball
+        this.home = ball.drops
+        this.x = ball.x
+        this.y = ball.y
+        this.direction = {x: -ball.direction.x, y: -ball.direction.y}
+        this.rotation = 0
+        this.dropElem.style.opacity = "1"
+        this.velocity = ball.velocity*1.5
+        this.applyEffect = mechanics[Math.floor(Math.random() * mechanics.length)]
+        this.rect = this.setRect()
     }
+
+    get x() {
+        return parseFloat(getComputedStyle(this.dropElem).getPropertyValue("--x"))
+    }
+
+    set x(value) {
+        this.dropElem.style.setProperty("--x", value)
+    }
+
+    get y() {
+        return parseFloat(getComputedStyle(this.dropElem).getPropertyValue("--y"))
+    }
+
+    set y(value) {
+        this.dropElem.style.setProperty("--y", value)
+    }
+
+
+    reset() {
+        this.dropElem.style.opacity = "0"
+    }
+
+    setRect() {
+        return this.dropElem.getBoundingClientRect()
+    }
+
+    rotate() {
+        if (this.rotation <= 359) {
+            this.rotation += 5
+        } else {
+            this.rotation = 0
+        }
+    }
+
+    update(delta, paddles) {
+        this.x += this.direction.x * this.velocity * delta
+        this.y += this.direction.y * this.velocity * delta
+        this.rotate()
+        this.dropElem.style.transform = `rotate(${this.rotation}deg)`
+        this.rect = this.setRect()
+
+        if (this.rect.bottom >= window.innerHeight || this.rect.top <= 0) {
+            this.direction.y *= -1
+        }
+
+        if (this.rect.right >= window.innerWidth || this.rect.left <= 0) {
+            this.kill()
+        }
+
+        let paddlerects = []
+        for (let i = 0; i < paddles.length; i++) {
+            paddlerects[i] = paddles[i].rect
+        }
+        if (paddlerects.some(r => this.checkCollision(r))) {
+            let target = paddlerects.find(r => this.checkCollision(r))
+            for (let i = 0; i < paddles.length; i++) {
+                if (paddles[i].rect == target) {
+                    target = paddles[i]
+                } 
+            }
+            this.applyEffect(target)
+            this.kill()
+        }
+    }
+
+    checkCollision(paddle) {
+        return (
+            paddle.left <= this.rect.right &&
+            paddle.right >= this.rect.left &&
+            paddle.top <= this.rect.bottom &&
+            paddle.bottom >= this.rect.top
+        )
+    }
+
+    kill() {
+        this.dropElem.style.opacity = "0"
+        this.home.shift(this)
+    }
+
+
 }
