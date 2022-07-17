@@ -9,7 +9,14 @@ function randomNumberBetween(min, max) {
     return Math.random() * (max - min) + min
 }
 
+function createElem(elem, cnames) {
+    elem = document.createElement("div")
+    elem.classList.add(cnames)
+    document.body.appendChild(elem)
 
+    return elem
+}
+        
 
 //classes
 export class Ball {
@@ -96,14 +103,20 @@ export class Ball {
             paddlerects.some(r => this.checkCollision(r))
             ) {
             let target = paddlerects.find(r => this.checkCollision(r))
+            let lasthit
             for (let i = 0; i < paddles.length; i++) {
                 if (paddles[i].rect == target) {
                     target = paddles[i]
-                } 
+                } else {
+                    lasthit = paddles[i]
+                }
             }
             this.dropReady = true
             this.dirCooldown = 0
             this.direction.x *= -1
+            if (this.sprintball) {
+                lasthit.paddleElem.style.backgroundColor = "orange"
+            }
             if (target.fastball) {
                 this.hitpower = .05
                 this.fasthits += 1
@@ -187,6 +200,11 @@ export class Paddle {
         this.debuff()
     }
 
+    newgame() {
+        this.reset()
+        this.scoreElem.textContent = 0
+    }
+
     awardGoal(value) {
         this.scoreElem.textContent = value
         this.score = value
@@ -199,7 +217,7 @@ export class Paddle {
             this.ball.sprintball = false
         }
         this.fastball = false
-
+        this.paddleElem.style.backgroundColor = "orange"
     }
     
 }
@@ -208,19 +226,22 @@ export class Paddle {
 
 
 //drop mechanics
-function grow (target) {
+function grow (target, color) {
     target.paddleElem.style.height = "25vh"
+    target.paddleElem.style.backgroundColor = color
     target.bonus = 1
 }
 
-function sprintball (target) {
+function sprintball (target, color) {
+    target.paddleElem.style.backgroundColor = color
     target.ball.resetVel = target.ball.velocity
     target.ball.sprintball = true
     target.ball.velocity += .1
     target.bonus = 1
 }
 
-function fastball (target) {
+function fastball (target, color) {
+    target.paddleElem.style.backgroundColor = color
     target.fastball = true
     target.bonus = 1
 }
@@ -233,10 +254,20 @@ function fastball (target) {
 //once >window or <0 it despawns
 
 
+//function translucence
+//-provides a slot to player to shoot a projectile
+//on this projectile collision enemy will have objects pass through it for 2-3 secs
+
+//function split
+//-splits ball into 3 balls
+//balls only despawn after goal
+//reset should not occur until all balls scored
+
+
 let mechanics = [
-    grow,
-    fastball,
-    sprintball
+    [grow, 'yellow'],
+    [fastball, 'red'],
+    [sprintball, 'green']
 ]
 
 
@@ -250,8 +281,11 @@ export class Drop {
         this.direction = {x: -ball.direction.x, y: -ball.direction.y}
         this.rotation = 0
         this.dropElem.style.opacity = "1"
-        this.velocity = ball.velocity*1.5
-        this.applyEffect = mechanics[Math.floor(Math.random() * mechanics.length)]
+        this.velocity = INITIAL_VEL*1.5
+        this.mechanic = mechanics[Math.floor(Math.random() * mechanics.length)]
+        this.applyEffect = this.mechanic[0]
+        this.color = this.mechanic[1]
+        this.dropElem.style.backgroundColor = this.color
         this.rect = this.setRect()
     }
 
@@ -314,7 +348,7 @@ export class Drop {
                     target = paddles[i]
                 } 
             }
-            this.applyEffect(target)
+            this.applyEffect(target, this.color)
             this.kill()
         }
     }
@@ -333,5 +367,28 @@ export class Drop {
         this.home.shift(this)
     }
 
+
+}
+
+
+
+
+export class Message {
+    constructor() {
+        this.Elem = createElem(this.Elem, "message")
+        this.reset()    
+    }
+
+    reset() {
+        this.Elem.textContent = undefined
+    }
+
+    goal(str) {
+        this.Elem.textContent = `${str} scored!`
+    }
+
+    winner(str) {
+        this.Elem.textContent = `${str} is the winnner!`
+    }
 
 }

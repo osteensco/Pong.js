@@ -64,7 +64,18 @@ body {
     height: 2vh;
 }
 
-
+.message {
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%, -50%);
+    font-family: sans-serif;
+    font-size: 10vh;
+    width:fit-content;
+    color: white;
+    background-color: black;
+    z-index: 1000;
+}
 
 .score {
     display: flex;
