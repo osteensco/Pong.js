@@ -1,4 +1,4 @@
-const INITIAL_VEL = .02
+const INITIAL_VEL = .035
 const CPUSPEED = .1
 
 
@@ -17,6 +17,10 @@ export class Ball {
         this.ballElem = ballElem
         this.dropReady = false
         this.drops = []
+        this.inertia = .001
+        this.hitpower = this.inertia
+        this.fasthits = 0
+        this.sprintball = false
         this.rect = this.setRect()
         this.reset()
     }
@@ -97,11 +101,21 @@ export class Ball {
                     target = paddles[i]
                 } 
             }
-            target.debuff()
             this.dropReady = true
             this.dirCooldown = 0
             this.direction.x *= -1
-            this.velocity += .001
+            if (target.fastball) {
+                this.hitpower = .05
+                this.fasthits += 1
+            } else {
+                this.hitpower = this.inertia
+                if (this.fasthits > 0) {
+                    this.velocity -= .05
+                    this.fasthits -= 1
+                }
+            }
+            this.velocity += this.hitpower
+            target.debuff()
         }
     }
 
@@ -143,6 +157,7 @@ export class Paddle {
         this.ball = ball
         this.score = 0
         this.bonus = 0
+        this.fastball = false
         this.rect = this.setRect()
         this.reset()
     }
@@ -179,7 +194,11 @@ export class Paddle {
 
     debuff() {
         this.paddleElem.style.height = "15vh"
-        this.ball.velocity = this.ball.resetVel
+        if (this.ball.sprintball) {
+            this.ball.velocity = this.ball.resetVel
+            this.ball.sprintball = false
+        }
+        this.fastball = false
 
     }
     
@@ -194,16 +213,31 @@ function grow (target) {
     target.bonus = 1
 }
 
-function fastball (target) {
+function sprintball (target) {
     target.ball.resetVel = target.ball.velocity
-    target.ball.velocity += .05
+    target.ball.sprintball = true
+    target.ball.velocity += .1
+    target.bonus = 1
+}
+
+function fastball (target) {
+    target.fastball = true
     target.bonus = 1
 }
 
 
+//function shadowclone 
+//-spawns additional paddels that move forward until off screen
+//child object of paddle
+//update function moves to opposite side if position is greater than or less than 50
+//once >window or <0 it despawns
 
 
-let mechanics = [grow, fastball]
+let mechanics = [
+    grow,
+    fastball,
+    sprintball
+]
 
 
 export class Drop {
