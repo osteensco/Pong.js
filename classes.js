@@ -190,7 +190,7 @@ export class Paddle {
     }
 
     update(delta) {
-        this.position += CPUSPEED * delta * (this.ball.y - this.position)
+        this.position += CPUSPEED * delta * (this.ball.y - (this.position - 10))
         this.rect = this.setRect()
     }
 
@@ -273,12 +273,15 @@ let mechanics = [
 
 export class Drop {
     constructor(ball) {
-        this.Elem = createElem(this.Elem, "message")
+        this.Elem = createElem(this.Elem, "drop")
         this.ball = ball
         this.home = ball.drops
         this.x = ball.x
         this.y = ball.y
-        this.direction = {x: -ball.direction.x, y: -ball.direction.y}
+        this.direction = {
+            x: -ball.direction.x,
+            y: -ball.direction.y * randomNumberBetween(-1, 1)
+        }
         this.rotation = 0
         this.Elem.style.opacity = "1"
         this.velocity = INITIAL_VEL*1.5
