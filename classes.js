@@ -20,8 +20,8 @@ function createElem(elem, cnames) {
 
 //classes
 export class Ball {
-    constructor(ballElem) {
-        this.ballElem = ballElem
+    constructor(Elem) {
+        this.Elem = Elem
         this.dropReady = false
         this.drops = []
         this.inertia = .001
@@ -33,23 +33,23 @@ export class Ball {
     }
 
     get x() {
-        return parseFloat(getComputedStyle(this.ballElem).getPropertyValue("--x"))
+        return parseFloat(getComputedStyle(this.Elem).getPropertyValue("--x"))
     }
 
     set x(value) {
-        this.ballElem.style.setProperty("--x", value)
+        this.Elem.style.setProperty("--x", value)
     }
 
     get y() {
-        return parseFloat(getComputedStyle(this.ballElem).getPropertyValue("--y"))
+        return parseFloat(getComputedStyle(this.Elem).getPropertyValue("--y"))
     }
 
     set y(value) {
-        this.ballElem.style.setProperty("--y", value)
+        this.Elem.style.setProperty("--y", value)
     }
 
     setRect() {
-        return this.ballElem.getBoundingClientRect()
+        return this.Elem.getBoundingClientRect()
     }
 
     reset() {
@@ -150,7 +150,7 @@ export class Ball {
             (this.direction.x > 0 && this.x > 50) ||
             (this.direction.x < 0 && this.x < 50)
             ) {
-            this.drops.push(new Drop(document.getElementById("drop"), this))
+            this.drops.push(new Drop(this))
             this.dropReady = false
         }
     }
@@ -272,46 +272,46 @@ let mechanics = [
 
 
 export class Drop {
-    constructor(dropElem, ball) {
-        this.dropElem = dropElem
+    constructor(ball) {
+        this.Elem = createElem(this.Elem, "message")
         this.ball = ball
         this.home = ball.drops
         this.x = ball.x
         this.y = ball.y
         this.direction = {x: -ball.direction.x, y: -ball.direction.y}
         this.rotation = 0
-        this.dropElem.style.opacity = "1"
+        this.Elem.style.opacity = "1"
         this.velocity = INITIAL_VEL*1.5
         this.mechanic = mechanics[Math.floor(Math.random() * mechanics.length)]
         this.applyEffect = this.mechanic[0]
         this.color = this.mechanic[1]
-        this.dropElem.style.backgroundColor = this.color
+        this.Elem.style.backgroundColor = this.color
         this.rect = this.setRect()
     }
 
     get x() {
-        return parseFloat(getComputedStyle(this.dropElem).getPropertyValue("--x"))
+        return parseFloat(getComputedStyle(this.Elem).getPropertyValue("--x"))
     }
 
     set x(value) {
-        this.dropElem.style.setProperty("--x", value)
+        this.Elem.style.setProperty("--x", value)
     }
 
     get y() {
-        return parseFloat(getComputedStyle(this.dropElem).getPropertyValue("--y"))
+        return parseFloat(getComputedStyle(this.Elem).getPropertyValue("--y"))
     }
 
     set y(value) {
-        this.dropElem.style.setProperty("--y", value)
+        this.Elem.style.setProperty("--y", value)
     }
 
 
     reset() {
-        this.dropElem.style.opacity = "0"
+        this.Elem.style.opacity = "0"
     }
 
     setRect() {
-        return this.dropElem.getBoundingClientRect()
+        return this.Elem.getBoundingClientRect()
     }
 
     rotate() {
@@ -326,7 +326,7 @@ export class Drop {
         this.x += this.direction.x * this.velocity * delta
         this.y += this.direction.y * this.velocity * delta
         this.rotate()
-        this.dropElem.style.transform = `rotate(${this.rotation}deg)`
+        this.Elem.style.transform = `rotate(${this.rotation}deg)`
         this.rect = this.setRect()
 
         if (this.rect.bottom >= window.innerHeight || this.rect.top <= 0) {
@@ -363,7 +363,7 @@ export class Drop {
     }
 
     kill() {
-        this.dropElem.style.opacity = "0"
+        this.Elem.style.opacity = "0"
         this.home.shift(this)
     }
 
