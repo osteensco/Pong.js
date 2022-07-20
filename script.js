@@ -4,12 +4,6 @@ import {Ball, Paddle, Message} from "./classes.js"
 
 ///////////TO DO/////////////////////
 
-        //remove html divs and use the following instead:
-            //*creates a div at end of body
-            //let p = document.createElement("p");
-            //document.body.appendChild(p);
-
-
         //add additional drop mechanics listed out
 
         //add simple visual effects for ball hit, goal score, drop pickup, etc
@@ -22,7 +16,7 @@ import {Ball, Paddle, Message} from "./classes.js"
 
 
 
-const ball = new Ball(document.getElementById("ball"))
+const ball = new Ball()
 const player = new Paddle(
     document.getElementById("player-paddle"),
     document.getElementById("player-score"),

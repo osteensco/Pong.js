@@ -20,8 +20,8 @@ function createElem(elem, cnames) {
 
 //classes
 export class Ball {
-    constructor(Elem) {
-        this.Elem = Elem
+    constructor() {
+        this.Elem = createElem(this.Elem, "ball")
         this.dropReady = false
         this.drops = []
         this.inertia = .001
