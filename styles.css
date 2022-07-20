@@ -7,7 +7,7 @@
 
 body {
     margin: 0;
-    background-color: rgb(177, 177, 177);
+    background-color: rgb(0, 0, 0);
     overflow: hidden;
 }
 
@@ -31,6 +31,9 @@ body {
     transform: translateY(-50%);
     width: 2vh;
     height: 15vh;
+    border-radius: 15px;
+    box-shadow: 0px 0px 15px 5px orange;
+	
 }
 
 .ball {
@@ -46,6 +49,8 @@ body {
     transform: translateY(-50%, -50%);
     width: 3vh;
     height: 3vh;
+    border-radius: 15px;
+    box-shadow: 0px 0px 15px 5px yellow;
 }
 
 .drop {
@@ -62,6 +67,8 @@ body {
     transform: translateY(-50%, -50%);
     width: 1vh;
     height: 2vh;
+    border-radius: 15px;
+    box-shadow: 0px 0px 15px 5px blueviolet;
 }
 
 .message {
@@ -82,7 +89,7 @@ body {
     justify-content: center;
     font-weight: bold;
     font-size: 10vh;
-    color: black;
+    color: orange;
 }
 
 .score > * {
@@ -97,6 +104,23 @@ body {
     text-align: right;
     border-right: 2vh solid orange
 }
+
+
+@keyframes pulse {
+	0% {
+		box-shadow: 0px 0px 15px 5px rgba(255, 255, 255, 0.9);
+	}
+
+	70% {
+		box-shadow: 0px 0px 15px 40px rgba(255, 255, 255, 0);
+	}
+
+	100% {
+		box-shadow: 0px 0px 15px 5px rgba(255, 255, 255, 0.3);
+	}
+}
+
+
 
 
 

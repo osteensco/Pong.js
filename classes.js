@@ -116,6 +116,7 @@ export class Ball {
             this.direction.x *= -1
             if (this.sprintball) {
                 lasthit.paddleElem.style.backgroundColor = "orange"
+                lasthit.paddleElem.style.boxShadow = "0px 0px 15px 5px orange"
             }
             if (target.fastball) {
                 this.hitpower = .05
@@ -128,6 +129,8 @@ export class Ball {
                 }
             }
             this.velocity += this.hitpower
+            target.paddleElem.style.animation = "none" //try paused here
+            target.paddleElem.style.animation = "pulse 0.5s" //try running here
             target.debuff()
         }
     }
@@ -218,6 +221,7 @@ export class Paddle {
         }
         this.fastball = false
         this.paddleElem.style.backgroundColor = "orange"
+        this.paddleElem.style.boxShadow = "0px 0px 15px 5px orange"
     }
     
 }
@@ -229,11 +233,13 @@ export class Paddle {
 function grow (target, color) {
     target.paddleElem.style.height = "25vh"
     target.paddleElem.style.backgroundColor = color
+    target.paddleElem.style.boxShadow = `0px 0px 15px 5px ${color}`
     target.bonus = 1
 }
 
 function sprintball (target, color) {
     target.paddleElem.style.backgroundColor = color
+    target.paddleElem.style.boxShadow = `0px 0px 15px 5px ${color}`
     target.ball.resetVel = target.ball.velocity
     target.ball.sprintball = true
     target.ball.velocity += .1
@@ -242,6 +248,7 @@ function sprintball (target, color) {
 
 function fastball (target, color) {
     target.paddleElem.style.backgroundColor = color
+    target.paddleElem.style.boxShadow = `0px 0px 15px 5px ${color}`
     target.fastball = true
     target.bonus = 1
 }
@@ -289,6 +296,7 @@ export class Drop {
         this.applyEffect = this.mechanic[0]
         this.color = this.mechanic[1]
         this.Elem.style.backgroundColor = this.color
+        this.Elem.style.boxShadow = `0px 0px 15px 5px ${this.color}`
         this.rect = this.setRect()
     }
 
