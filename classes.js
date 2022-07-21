@@ -1,4 +1,4 @@
-const INITIAL_VEL = .035
+const INITIAL_VEL = .04
 const CPUSPEED = .1
 
 
@@ -28,6 +28,7 @@ export class Ball {
         this.hitpower = this.inertia
         this.fasthits = 0
         this.sprintball = false
+        this.animation = false
         this.rect = this.setRect()
         this.reset()
     }
@@ -102,37 +103,43 @@ export class Ball {
             this.dirCooldown >= 50 &&
             paddlerects.some(r => this.checkCollision(r))
             ) {
-            let target = paddlerects.find(r => this.checkCollision(r))
-            let lasthit
-            for (let i = 0; i < paddles.length; i++) {
-                if (paddles[i].rect == target) {
-                    target = paddles[i]
+                if (this.animation) {
+                    this.Elem.classList.remove("hit2")
+                    this.Elem.classList.add("hit1")
                 } else {
-                    lasthit = paddles[i]
+                    this.Elem.classList.remove("hit1")
+                    this.Elem.classList.add("hit2")
                 }
-            }
-            this.dropReady = true
-            this.dirCooldown = 0
-            this.direction.x *= -1
-            if (this.sprintball) {
-                lasthit.paddleElem.style.backgroundColor = "orange"
-                lasthit.paddleElem.style.boxShadow = "0px 0px 15px 5px orange"
-            }
-            if (target.fastball) {
-                this.hitpower = .05
-                this.fasthits += 1
-            } else {
-                this.hitpower = this.inertia
-                if (this.fasthits > 0) {
-                    this.velocity -= .05
-                    this.fasthits -= 1
+                this.animation = !this.animation
+                let target = paddlerects.find(r => this.checkCollision(r))
+                let lasthit
+                for (let i = 0; i < paddles.length; i++) {
+                    if (paddles[i].rect == target) {
+                        target = paddles[i]
+                    } else {
+                        lasthit = paddles[i]
+                    }
                 }
+                this.dropReady = true
+                this.dirCooldown = 0
+                this.direction.x *= -1
+                if (this.sprintball) {
+                    lasthit.paddleElem.style.backgroundColor = "orange"
+                    lasthit.paddleElem.style.boxShadow = "0px 0px 15px 5px orange"
+                }
+                if (target.fastball) {
+                    this.hitpower = .05
+                    this.fasthits += 1
+                } else {
+                    this.hitpower = this.inertia
+                    if (this.fasthits > 0) {
+                        this.velocity -= .05
+                        this.fasthits -= 1
+                    }
+                }
+                this.velocity += this.hitpower
+                target.debuff()
             }
-            this.velocity += this.hitpower
-            target.paddleElem.style.animation = "none" //try paused here
-            target.paddleElem.style.animation = "pulse 0.5s" //try running here
-            target.debuff()
-        }
     }
 
     checkGoal() {
@@ -174,6 +181,7 @@ export class Paddle {
         this.score = 0
         this.bonus = 0
         this.fastball = false
+        this.animation = false
         this.rect = this.setRect()
         this.reset()
     }
@@ -359,6 +367,14 @@ export class Drop {
                     target = paddles[i]
                 } 
             }
+            if (target.animation) {
+                target.paddleElem.classList.remove("pulse1")
+                target.paddleElem.classList.add("pulse2")
+            } else {
+                target.paddleElem.classList.remove("pulse2")
+                target.paddleElem.classList.add("pulse1")
+            }
+            target.animation = !target.animation
             this.applyEffect(target, this.color)
             this.kill()
         }
