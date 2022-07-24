@@ -6,9 +6,9 @@ import {Ball, Paddle, Message} from "./classes.js"
 
         //add additional drop mechanics listed out
 
-        //add simple visual effects for ball hit, goal score, drop pickup, etc
+        //add visual effects for goal score/win
 
-        //add menus
+        //add play button for game start
 
 
 
@@ -17,12 +17,12 @@ import {Ball, Paddle, Message} from "./classes.js"
 
 
 const ball = new Ball()
-const player = new Paddle(
+const player = new Paddle(false,
     document.getElementById("player-paddle"),
     document.getElementById("player-score"),
     ball
     )
-const cpu = new Paddle(
+const cpu = new Paddle(true,
     document.getElementById("cpu-paddle"),
     document.getElementById("cpu-score"),
     ball
@@ -51,7 +51,7 @@ function gameLoop(time) {
         
         if (ball.checkGoal()) {
             if (ball.rect.right >= window.innerWidth) {
-                player.awardGoal(player.score + 1 + player.bonus)   
+                player.awardGoal(player.score + 1 + player.bonus)
                 message.goal('Player')            
             } else {
                 cpu.awardGoal(cpu.score + 1 + cpu.bonus)

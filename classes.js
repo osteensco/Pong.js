@@ -9,19 +9,26 @@ function randomNumberBetween(min, max) {
     return Math.random() * (max - min) + min
 }
 
-function createElem(elem, cnames) {
-    elem = document.createElement("div")
+function createElem(cnames, type="div") {
+    let elem = document.createElement(type)
     elem.classList.add(cnames)
     document.body.appendChild(elem)
 
     return elem
 }
-        
+
+function cleanup(cname) {
+    const destroy = document.querySelectorAll(`.${cname}`)
+
+    destroy.forEach(i => {i.remove()})
+}
+
+
 
 //classes
 export class Ball {
     constructor() {
-        this.Elem = createElem(this.Elem, "ball")
+        this.Elem = createElem("ball")
         this.dropReady = false
         this.drops = []
         this.inertia = .001
@@ -55,7 +62,6 @@ export class Ball {
 
     reset() {
         this.x = 50
-        this.y = 50
         this.direction = { x: 0 }
         while (
             Math.abs(this.direction.x) <= .2 || 
@@ -87,7 +93,7 @@ export class Ball {
         }
         
         if (this.dirCooldown < 50) {
-            this.dirCooldown += 1
+            this.dirCooldown++
         }
 
         if (this.rect.bottom >= window.innerHeight || this.rect.top <= 0) {
@@ -129,7 +135,7 @@ export class Ball {
                 }
                 if (target.fastball) {
                     this.hitpower = .05
-                    this.fasthits += 1
+                    this.fasthits++
                 } else {
                     this.hitpower = this.inertia
                     if (this.fasthits > 0) {
@@ -174,14 +180,16 @@ export class Ball {
 
 
 export class Paddle {
-    constructor(paddleElem, scoreElem, ball) {
+    constructor(boolean, paddleElem, scoreElem, ball) {
         this.paddleElem = paddleElem
         this.scoreElem = scoreElem
+        this.cpu = boolean
         this.ball = ball
         this.score = 0
         this.bonus = 0
         this.fastball = false
         this.animation = false
+        this.streaks = []
         this.rect = this.setRect()
         this.reset()
     }
@@ -208,6 +216,7 @@ export class Paddle {
     reset() {
         this.position = 50
         this.bonus = 0
+        this.streaks = []
         this.debuff()
     }
 
@@ -216,9 +225,25 @@ export class Paddle {
         this.scoreElem.textContent = 0
     }
 
+    scoreAnimation() {
+        let amount = 100
+        let i = 0
+        let direction
+        if (this.cpu) {
+            direction = 'to right'
+        } else {
+            direction = 'to left'
+        }
+        while(i < amount) {
+            this.streaks.push(new Streak(direction, this.ball))
+            i++
+        }
+    }
+
     awardGoal(value) {
         this.scoreElem.textContent = value
         this.score = value
+        this.scoreAnimation()
     }
 
     debuff() {
@@ -288,7 +313,7 @@ let mechanics = [
 
 export class Drop {
     constructor(ball) {
-        this.Elem = createElem(this.Elem, "drop")
+        this.Elem = createElem("drop")
         this.ball = ball
         this.home = ball.drops
         this.x = ball.x
@@ -390,8 +415,8 @@ export class Drop {
     }
 
     kill() {
-        this.Elem.style.opacity = "0"
         this.home.shift(this)
+        cleanup("drop")
     }
 
 
@@ -399,15 +424,44 @@ export class Drop {
 
 
 
+export class Streak {
+    constructor(direction, ball) {
+        this.Elem = createElem("streak", "i")
+        this.lowerBound = (ball.rect.top)
+        this.upperBound = (ball.rect.bottom)
+        this.size = Math.random() * 5
+        this.posX = Math.floor(Math.random() * window.innerWidth)
+        this.posY = Math.floor(Math.random() * this.upperBound) + this.lowerBound
+        this.duration = Math.random() * 5
+
+        this.Elem.style.background = `linear-gradient(${direction}, transparent, rgb(227, 252, 5))`
+        this.Elem.style.height = `${.2 + this.size}px`
+        this.Elem.style.left = `-${this.posX}px`
+        this.Elem.style.top = `${this.posY}px`
+        this.Elem.style.animationDuration = `${.1 + this.duration}s`
+        if (direction == 'to left') {
+            this.Elem.style.animationDirection = 'reverse'
+        }
+    }
+
+
+
+
+
+}
+
+
 
 export class Message {
     constructor() {
-        this.Elem = createElem(this.Elem, "message")
+        this.Elem = createElem("message")
         this.reset()    
     }
 
     reset() {
         this.Elem.textContent = undefined
+        cleanup("streak")
+        
     }
 
     goal(str) {
