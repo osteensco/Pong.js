@@ -6,9 +6,40 @@
 
 
 body {
+    display: flex;
     margin: 0;
     background-color: rgb(0, 0, 0);
+    align-items: center;
+    justify-content: center;
     overflow: hidden;
+}
+
+
+.button {
+    --colorchnge: orange;
+
+
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%, -50%);
+    font-family: sans-serif;
+    font-size: 10vh;
+    width: fit-content;
+    color: white;
+    background: transparent;
+    text-decoration: none;
+    text-align: center;
+    transition: 0.5s;
+    
+}
+
+.button:hover {
+    text-indent: .5rem;
+    letter-spacing: .5rem;
+    color: var(--colorchnge);
+    border-radius: 15px;
+    box-shadow: 0 0 45px var(--colorchnge);
 }
 
 
@@ -78,8 +109,8 @@ body {
     position: absolute;
     background-color: blueviolet;
     opacity: 0;
-    left: calc(var(--x) * 1vh);
-    top: calc(var(--y) * 1vw);
+    left: calc(var(--x) * 1vw);
+    top: calc(var(--y) * 1vh);
     border-radius: 20%;
     transform: translateY(-50%, -50%);
     width: 1vh;
@@ -97,7 +128,7 @@ body {
     font-size: 10vh;
     width:fit-content;
     color: white;
-    background-color: black;
+    background: transparent;
     z-index: 1000;
 }
 

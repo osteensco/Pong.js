@@ -9,7 +9,7 @@ function randomNumberBetween(min, max) {
     return Math.random() * (max - min) + min
 }
 
-function createElem(cnames, type="div") {
+export function createElem(cnames, type="div") {
     let elem = document.createElement(type)
     elem.classList.add(cnames)
     document.body.appendChild(elem)
@@ -17,7 +17,7 @@ function createElem(cnames, type="div") {
     return elem
 }
 
-function cleanup(cname) {
+export function cleanup(cname) {
     const destroy = document.querySelectorAll(`.${cname}`)
 
     destroy.forEach(i => {i.remove()})
@@ -77,6 +77,7 @@ export class Ball {
             this.drops[i].reset()
         }
         this.drops = []
+        cleanup("drop")
     }
 
     update(delta, paddles) {
@@ -106,7 +107,6 @@ export class Ball {
             paddlerects[i] = paddles[i].rect
         } 
         if (
-            this.dirCooldown >= 50 &&
             paddlerects.some(r => this.checkCollision(r))
             ) {
                 if (this.animation) {
@@ -126,9 +126,11 @@ export class Ball {
                         lasthit = paddles[i]
                     }
                 }
-                this.dropReady = true
-                this.dirCooldown = 0
-                this.direction.x *= -1
+                
+                if (this.dirCooldown >= 50) {
+                    this.dropReady = true
+                    this.dirCooldown = 0
+                }
                 if (this.sprintball) {
                     lasthit.paddleElem.style.backgroundColor = "orange"
                     lasthit.paddleElem.style.boxShadow = "0px 0px 15px 5px orange"
@@ -143,6 +145,7 @@ export class Ball {
                         this.fasthits -= 1
                     }
                 }
+                this.direction.x *= -1
                 this.velocity += this.hitpower
                 target.debuff()
             }
@@ -171,6 +174,8 @@ export class Ball {
         }
     }
     
+   
+
 
 }
 
@@ -209,7 +214,10 @@ export class Paddle {
     }
 
     update(delta) {
-        this.position += CPUSPEED * delta * (this.ball.y - (this.position - 10))
+        if (this.cpu) {
+            this.position += CPUSPEED * delta * (this.ball.y - this.position)
+        }
+        
         this.rect = this.setRect()
     }
 
@@ -415,8 +423,9 @@ export class Drop {
     }
 
     kill() {
+        this.Elem.style.opacity = "0"
         this.home.shift(this)
-        cleanup("drop")
+        this.Elem.remove()
     }
 
 
@@ -427,11 +436,11 @@ export class Drop {
 export class Streak {
     constructor(direction, ball) {
         this.Elem = createElem("streak", "i")
-        this.lowerBound = (ball.rect.top)
-        this.upperBound = (ball.rect.bottom)
+        this.lowerBound = (ball.rect.top - ball.rect.height)
+        this.upperBound = (ball.rect.bottom + ball.rect.height)
         this.size = Math.random() * 5
         this.posX = Math.floor(Math.random() * window.innerWidth)
-        this.posY = Math.floor(Math.random() * this.upperBound) + this.lowerBound
+        this.posY = randomNumberBetween(this.lowerBound, this.upperBound)
         this.duration = Math.random() * 5
 
         this.Elem.style.background = `linear-gradient(${direction}, transparent, rgb(227, 252, 5))`
@@ -443,9 +452,6 @@ export class Streak {
             this.Elem.style.animationDirection = 'reverse'
         }
     }
-
-
-
 
 
 }

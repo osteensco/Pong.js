@@ -1,49 +1,46 @@
-import {Ball, Paddle, Message} from "./classes.js"
+import {Ball, Paddle, Message, cleanup, createElem} from "./classes.js"
 
 
 
-///////////TO DO/////////////////////
+let init
+let ball 
+let player
+let cpu
+let message
 
-        //add additional drop mechanics listed out
-
-        //add visual effects for goal score/win
-
-        //add play button for game start
-
-
-
-
-
-
-
-const ball = new Ball()
-const player = new Paddle(false,
-    document.getElementById("player-paddle"),
-    document.getElementById("player-score"),
-    ball
-    )
-const cpu = new Paddle(true,
-    document.getElementById("cpu-paddle"),
-    document.getElementById("cpu-score"),
-    ball
-    )
-const message = new Message()
-
-
-
-
-let lastTime = 0
+let lastTime
 let startTime
-let intermission = false
+let intermission
 
-
+let cancelID
 
 function gameLoop(time) {
+    if (init) {
+        ball = new Ball()
+        player = new Paddle(false,
+            document.getElementById("player-paddle"),
+            document.getElementById("player-score"),
+            ball
+            )
+        cpu = new Paddle(true,
+            document.getElementById("cpu-paddle"),
+            document.getElementById("cpu-score"),
+            ball
+            )
+        message = new Message()
+
+        lastTime = 0
+        startTime
+        intermission = false
+        init = false
+    }
+
+
     if (lastTime == 0) {
         startTime = time
         lastTime = time
     }
-    else if (lastTime - startTime >= 2000) {//short pause, updates objects, then checks if goal is scored
+    else if (!intermission && lastTime - startTime >= 2000) {//short pause, updates objects, then checks if goal is scored
         message.reset()
         const delta = time - lastTime
         ball.update(delta, [player, cpu])
@@ -69,6 +66,8 @@ function gameLoop(time) {
         lastTime = time
     }
 
+
+    cancelID = window.requestAnimationFrame(gameLoop)
     //check for win
     if (player.score >= 5 || cpu.score >= 5) {
         if (player.score >= 5) {
@@ -82,29 +81,44 @@ function gameLoop(time) {
             lastTime = 0
             intermission = true
         }
-        else if (lastTime - startTime >= 2000) {
-            cpu.score = 0
-            player.score = 0
+        else if (lastTime - startTime >= 5000) {
             cpu.newgame()
             player.newgame()
-            lastTime = 0
-            intermission = false
+            cleanup("ball")
+            cleanup("message")
+            cleanup("drop")
+            cleanup("streak")
+            window.cancelAnimationFrame(cancelID)
+            start = createElem("button", "a")
+            start.setAttribute('href', '#')
+            start.setAttribute('id', 'button')
+            start.innerText = "PLAY!"
+            start.addEventListener("click", newGame)
         }
     }
     
+ 
 
-
-    window.requestAnimationFrame(gameLoop)
 }
 
+
+
+
+function newGame() {
+    cleanup("button")
+    init = true
+
+    //async animation method, runs gameloop
+    window.requestAnimationFrame(gameLoop)
+
+}
+
+let start = document.getElementById('button')
+
+start.addEventListener("click", newGame)
 
 //listener for player movement
 document.addEventListener("mousemove", e => {
     player.position = (e.y / window.innerHeight) * 100
     player.rect = player.setRect()
 })
-
-
-//async animation method, runs gameloop
-window.requestAnimationFrame(gameLoop)
-
