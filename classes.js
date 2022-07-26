@@ -1,4 +1,4 @@
-const INITIAL_VEL = .04
+const INITIAL_VEL = .05
 const CPUSPEED = .1
 
 
@@ -27,7 +27,7 @@ export function cleanup(cname) {
 
 //classes
 export class Ball {
-    constructor() {
+    constructor(clone=false) {
         this.Elem = createElem("ball")
         this.dropReady = false
         this.drops = []
@@ -36,6 +36,9 @@ export class Ball {
         this.fasthits = 0
         this.sprintball = false
         this.animation = false
+        this.stuck = false
+        this.clones = []
+        this.isClone = clone
         this.rect = this.setRect()
         this.reset()
     }
@@ -81,10 +84,18 @@ export class Ball {
     }
 
     update(delta, paddles) {
+        if (this.clones.length) {
+            this.clones[0].update(delta, paddles)
+        }
         this.x += this.direction.x * this.velocity * delta
         this.y += this.direction.y * this.velocity * delta
+        if (
+            Math.abs(this.direction.y) <= .2 ||
+            Math.abs(this.direction.y) >= .9
+            ) {
+            this.direction.y = Math.sin(randomNumberBetween(0, 2 * Math.PI))
+        }
         this.rect = this.setRect()
-
         for (let i = 0; i < this.drops.length; i++) {
             this.drops[i].update(delta, paddles)
         }
@@ -145,15 +156,62 @@ export class Ball {
                         this.fasthits -= 1
                     }
                 }
-                this.direction.x *= -1
+                if (this.stuck) {
+                    this.x += this.direction.x * this.velocity * delta
+                    this.y += this.direction.y * this.velocity * delta
+                } else {
+                    this.direction.x *= -1
+                    target.debuff()
+                }
+                if (this.velocity < INITIAL_VEL) {
+                    this.velocity = INITIAL_VEL
+                }
                 this.velocity += this.hitpower
-                target.debuff()
+                this.stuck = true
+            } else {
+                this.stuck = false
             }
     }
 
     checkGoal() {
-        return this.rect.right >= window.innerWidth || this.rect.left <= 0
+        
+        return (
+            this.rect.right >= window.innerWidth || 
+            this.rect.left <= 0 ||
+            this.clonesGoal()
+        )
+
     }
+
+    clonesGoal() {
+        if (this.clones.length) {
+            return this.clones[0].checkGoal()
+        } else {
+            return false
+        }
+    }
+
+
+    //recursive function successfully id's goal
+    //if clone scored, need to identify x and y of that clone
+    //move ball to where clone is, replace direction and vel as well
+        //this will determine who to award goal to in gameLoop
+    //remove all clones
+
+    // score() {
+    //     if (this.clones.length) {
+    //         let i = 0
+    //         let ball = this.clones[0]
+    //         while (i < 1) {
+    //             if (ball.clones.length) {
+    //                 ball = ball.clones[0]
+    //             } else {
+    //                 ball.clones.push(new Ball(true))
+    //                 i++
+    //             }
+    //         }
+    //     }
+    // }
 
     checkCollision(paddle) {
         return (
@@ -283,7 +341,8 @@ function sprintball (target, color) {
     target.paddleElem.style.boxShadow = `0px 0px 15px 5px ${color}`
     target.ball.resetVel = target.ball.velocity
     target.ball.sprintball = true
-    target.ball.velocity += .1
+    target.ball.velocity += .05
+    target.ball.direction.y *= -1*Math.random()
     target.bonus = 1
 }
 
@@ -294,29 +353,31 @@ function fastball (target, color) {
     target.bonus = 1
 }
 
+function cloneBall (target, color) {
+    target.paddleElem.style.backgroundColor = color
+    target.paddleElem.style.boxShadow = `0px 0px 15px 5px ${color}`
+    let i = 0
+    let ball = target.ball
+    while (i < 1) {
+        if (ball.clones.length) {
+            ball = ball.clones[0]
+        } else {
+            ball.clones.push(new Ball(true))
+            i++
+        }
+    }
+}
 
-//function shadowclone 
-//-spawns additional paddels that move forward until off screen
-//child object of paddle
-//update function moves to opposite side if position is greater than or less than 50
-//once >window or <0 it despawns
-
-
-//function translucence
-//-provides a slot to player to shoot a projectile
-//on this projectile collision enemy will have objects pass through it for 2-3 secs
-
-//function split
-//-splits ball into 3 balls
-//balls only despawn after goal
-//reset should not occur until all balls scored
 
 
 let mechanics = [
     [grow, 'yellow'],
     [fastball, 'red'],
-    [sprintball, 'green']
+    [sprintball, 'green'],
+    [cloneBall, 'blueviolet']
 ]
+
+
 
 
 export class Drop {

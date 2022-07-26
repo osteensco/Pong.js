@@ -47,6 +47,7 @@ function gameLoop(time) {
         cpu.update(delta)
         
         if (ball.checkGoal()) {
+            ball.score()
             if (ball.rect.right >= window.innerWidth) {
                 player.awardGoal(player.score + 1 + player.bonus)
                 message.goal('Player')            
