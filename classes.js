@@ -18,9 +18,7 @@ export function createElem(cnames, type="div") {
 }
 
 export function cleanup(cname) {
-    const destroy = document.querySelectorAll(`.${cname}`)
-
-    destroy.forEach(i => {i.remove()})
+    document.querySelectorAll(`.${cname}`).forEach(i => {i.remove()})
 }
 
 
@@ -38,7 +36,7 @@ export class Ball {
         this.animation = false
         this.stuck = false
         this.clones = []
-        this.isClone = clone
+        this.clone(clone)
         this.rect = this.setRect()
         this.reset()
     }
@@ -65,6 +63,7 @@ export class Ball {
 
     reset() {
         this.x = 50
+        this.y = 50
         this.direction = { x: 0 }
         while (
             Math.abs(this.direction.x) <= .2 || 
@@ -81,6 +80,7 @@ export class Ball {
         }
         this.drops = []
         cleanup("drop")
+        this.clones = []
     }
 
     update(delta, paddles) {
@@ -191,27 +191,23 @@ export class Ball {
         }
     }
 
+    score() {
+        if (this.clonesGoal()) {
+            this.x = this.clones[0].x
+            this.y = this.clones[0].y
+            this.direction = this.clones[0].direction
+            this.velocity = this.clones[0].velocity
+            this.rect = this.clones[0].rect
+            // this.clones[0].Elem.remove()
+        }
+        cleanup("clone")
+    }
 
-    //recursive function successfully id's goal
-    //if clone scored, need to identify x and y of that clone
-    //move ball to where clone is, replace direction and vel as well
-        //this will determine who to award goal to in gameLoop
-    //remove all clones
-
-    // score() {
-    //     if (this.clones.length) {
-    //         let i = 0
-    //         let ball = this.clones[0]
-    //         while (i < 1) {
-    //             if (ball.clones.length) {
-    //                 ball = ball.clones[0]
-    //             } else {
-    //                 ball.clones.push(new Ball(true))
-    //                 i++
-    //             }
-    //         }
-    //     }
-    // }
+    clone(clone) {
+        if (clone) {
+            this.Elem.classList.add("clone")
+        }
+    }
 
     checkCollision(paddle) {
         return (

@@ -205,7 +205,7 @@ body {
 }
 
 
-i {
+i {/* used for streaks in goal animation */
     position: absolute;
     width: 300px;
     transform: translateX(-300px);

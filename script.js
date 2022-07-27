@@ -120,6 +120,9 @@ start.addEventListener("click", newGame)
 
 //listener for player movement
 document.addEventListener("mousemove", e => {
-    player.position = (e.y / window.innerHeight) * 100
-    player.rect = player.setRect()
+    if (player) {
+        player.position = (e.y / window.innerHeight) * 100
+        player.rect = player.setRect()
+    }
+
 })
