@@ -1,5 +1,5 @@
 const INITIAL_VEL = .05
-const CPUSPEED = .1
+const CPUSPEED = .0065
 
 
 
@@ -269,10 +269,24 @@ export class Paddle {
 
     update(delta) {
         if (this.cpu) {
-            this.position += CPUSPEED * delta * (this.ball.y - this.position)
+            let closestBall = this.checkDistance(this.ball)
+            this.position += CPUSPEED * delta * (closestBall.y - this.position)
         }
         
         this.rect = this.setRect()
+    }
+
+    checkDistance(ball) {
+        if (ball.clones.length) {
+            let clone = this.checkDistance(ball.clones[0])
+            if (  
+                Math.abs(this.rect.right - ball.rect.left) >
+                Math.abs(this.rect.right - clone.rect.left)
+            ) {
+                ball = clone
+            }
+        }
+        return ball
     }
 
     reset() {
@@ -349,7 +363,7 @@ function fastball (target, color) {
     target.bonus = 1
 }
 
-function cloneBall (target, color) {
+function cloneball (target, color) {
     target.paddleElem.style.backgroundColor = color
     target.paddleElem.style.boxShadow = `0px 0px 15px 5px ${color}`
     let i = 0
@@ -370,7 +384,7 @@ let mechanics = [
     [grow, 'yellow'],
     [fastball, 'red'],
     [sprintball, 'green'],
-    [cloneBall, 'blueviolet']
+    [cloneball, 'blueviolet']
 ]
 
 
