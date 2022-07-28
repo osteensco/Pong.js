@@ -1,5 +1,5 @@
 const INITIAL_VEL = .05
-const CPUSPEED = .0065
+const CPUSPEED = .008
 
 
 
